@@ -1,0 +1,39 @@
+Now run it. First add some documents:
+bashpython chroma_tester.py \
+  --collection mytest \
+  --add '["FastAPI is a Python framework for building APIs","Django is batteries included Python framework","ChromaDB stores vector embeddings","Ollama runs LLMs locally","PostgreSQL is a relational database"]' \
+       '["doc1","doc2","doc3","doc4","doc5"]'
+Then query with a single question:
+bashpython chroma_tester.py \
+  --collection mytest \
+  --query "I want to build a REST API"
+Then query with multiple questions at once:
+bashpython chroma_tester.py \
+  --collection mytest \
+  --n 2 \
+  --query "I want to build a REST API" "I need to store data" "run AI locally"
+List everything in the collection:
+bashpython chroma_tester.py --collection mytest --list
+Clear and start fresh:
+bashpython chroma_tester.py --collection mytest --clear
+
+Notice I added a similarity field alongside distance:
+python"similarity": f"{round((1 - dist) * 100, 1)}%"
+Distance of 0.724 becomes 27.6% similar — more human readable. The closer to 100% the better the match.
+Run those commands and tell me what you see — especially the multiple query one. That's where it gets interesting.You said: so chromadb is always called externally?so chromadb is always called externally? i was thinking of calling from the test_chroma file8:05 AMClaude responded: Yes — ChromaDB is always called from your Python code.Yes — ChromaDB is always called from your Python code. There is no separate ChromaDB server you log into or query directly like you would with PostgreSQL using psql.
+Think of it like SQLite — you never "connect to SQLite" as a separate running service. You just import it in Python and it reads/writes files directly. ChromaDB works the same way.
+python# PostgreSQL — needs a running server, connection string, credentials
+import psycopg2
+conn = psycopg2.connect("host=localhost dbname=mydb user=postgres")
+
+# SQLite — just a file, no server needed
+import sqlite3
+conn = sqlite3.connect("./mydb.sqlite")
+
+# ChromaDB — same idea as SQLite, just a local file
+import chromadb
+client = chromadb.PersistentClient(path="./data/chroma_db")
+So yes — call it directly from test_chroma.py. That's exactly right.
+But here's the thing — you now have two files doing similar things:
+test_chroma.py          ← your original simple script
+chroma_tester.py        ← the reusable CLI tool we just built
